@@ -64,7 +64,19 @@ func (d *Driver) NodePublishVolume(ctx context.Context, req *csi.NodePublishVolu
 		return nil, status.Error(codes.InvalidArgument, "Staging target not provided")
 	}
 
-	mountOptions := []string{"bind"}
+	fsType := req.GetVolumeCapability().GetMount().GetFsType()
+	if len(fsType) == 0 {
+		fsType = "cifs"
+	}
+
+	//mountOptions := []string{}
+	mountOptions := req.GetVolumeCapability().GetMount().GetMountFlags()
+	if runtime.GOOS == "windows" {
+		mountOptions = append(mountOptions, "bind")
+	} /* else {
+		mountOptions = append(mountOptions, req.GetVolumeCapability().GetMount().GetMountFlags()...)
+	} */
+
 	if req.GetReadonly() {
 		mountOptions = append(mountOptions, "ro")
 	}
@@ -83,7 +95,7 @@ func (d *Driver) NodePublishVolume(ctx context.Context, req *csi.NodePublishVolu
 	}
 
 	klog.V(2).Infof("NodePublishVolume: mounting %s at %s with mountOptions: %v volumeID(%s)", source, target, mountOptions, volumeID)
-	if err := d.mounter.Mount(source, target, "", mountOptions); err != nil {
+	if err := d.mounter.Mount(source, target, fsType, mountOptions); err != nil {
 		if removeErr := os.Remove(target); removeErr != nil {
 			return nil, status.Errorf(codes.Internal, "Could not remove mount target %q: %v", target, removeErr)
 		}
@@ -131,6 +143,10 @@ func (d *Driver) NodeStageVolume(ctx context.Context, req *csi.NodeStageVolumeRe
 	}
 
 	context := req.GetVolumeContext()
+	fsType := req.GetVolumeCapability().GetMount().GetFsType()
+	if len(fsType) == 0 {
+		fsType = "cifs"
+	}
 	mountFlags := req.GetVolumeCapability().GetMount().GetMountFlags()
 	secrets := req.GetSecrets()
 
@@ -192,7 +208,7 @@ func (d *Driver) NodeStageVolume(ctx context.Context, req *csi.NodeStageVolumeRe
 		}
 		mountComplete := false
 		err = wait.PollImmediate(1*time.Second, 2*time.Minute, func() (bool, error) {
-			err := Mount(d.mounter, source, targetPath, "cifs", mountOptions, sensitiveMountOptions)
+			err := Mount(d.mounter, source, targetPath, fsType, mountOptions, sensitiveMountOptions)
 			mountComplete = true
 			return true, err
 		})

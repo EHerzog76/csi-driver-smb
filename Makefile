@@ -12,12 +12,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-PKG = github.com/kubernetes-csi/csi-driver-smb
+#PKG = github.com/kubernetes-csi/csi-driver-smb
+PKG = github.com/EHerzog76/csi-driver-smb
 GIT_COMMIT ?= $(shell git rev-parse HEAD)
-REGISTRY ?= andyzhangx
+#REGISTRY ?= andyzhangx
+REGISTRY ?= eherzog
 REGISTRY_NAME = $(shell echo $(REGISTRY) | sed "s/.azurecr.io//g")
 IMAGE_NAME ?= smb-csi
-IMAGE_VERSION ?= v1.4.0
+IMAGE_VERSION ?= v1.4.1
 VERSION ?= latest
 # Use a custom version for E2E tests if we are testing in CI
 ifdef CI
