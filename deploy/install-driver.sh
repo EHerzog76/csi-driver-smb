@@ -21,7 +21,8 @@ if [[ "$#" -gt 0 ]]; then
   ver="$1"
 fi
 
-repo="https://raw.githubusercontent.com/kubernetes-csi/csi-driver-smb/$ver/deploy"
+#repo="https://raw.githubusercontent.com/kubernetes-csi/csi-driver-smb/$ver/deploy"
+repo="https://raw.githubusercontent.com/EHerzog76/csi-driver-smb/$ver/deploy"
 if [[ "$#" -gt 1 ]]; then
   if [[ "$2" == *"local"* ]]; then
     echo "use local deploy"
